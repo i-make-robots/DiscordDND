@@ -2,13 +2,20 @@ package com.marginallyclever.discordDND;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.security.auth.login.LoginException;
 
@@ -41,7 +48,7 @@ public class App extends ListenerAdapter {
         
         
         JDABuilder builder = new JDABuilder(AccountType.BOT);
-        String token = "";
+        String token = readAllBytesJava7(App.class.getResource("token.txt"));
         builder.setToken(token);
         builder.addEventListener(new App());
         try {
@@ -51,7 +58,21 @@ public class App extends ListenerAdapter {
 			e.printStackTrace();
 		}
     }
-	
+
+    private static String readAllBytesJava7(URL filePath) {
+        String content = "";
+        try {
+        	System.out.println("Token search: "+filePath.toURI());
+            content = new String ( Files.readAllBytes( Paths.get( filePath.toURI() ) ) );
+        }  catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return content;
+    }
+    
 	public App() {
 		abbreviations.put("strength", "strength");
 		abbreviations.put("str", "strength");
