@@ -41,7 +41,7 @@ public class App extends ListenerAdapter {
         
         
         JDABuilder builder = new JDABuilder(AccountType.BOT);
-        String token = "Njk4MjMyNzAwMDI0MTI3NTI4.XpELlw.QbOUSnwz99-5g9nK02ekN-5D5S4";
+        String token = "";
         builder.setToken(token);
         builder.addEventListener(new App());
         try {
