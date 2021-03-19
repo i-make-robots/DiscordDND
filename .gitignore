@@ -23,3 +23,6 @@
 hs_err_pid*
 *.5e
 src/main/java/com/marginallyclever/discordDND/token.txt
+
+# Filesystem crap so Mac developers can contribute too.
+.DS_Store
