@@ -252,7 +252,7 @@ public class App extends ListenerAdapter {
     		String [] parts = message.split("\\s");
     		if(parts.length!=2) return;
     		
-    		// format is AdB[kC][+D]
+    		// format is AdB[kC][+/-D]
     		// A,B,C,D are whole numbers.
     		// C and D are optional.
 			String p1 = parts[1];
@@ -261,6 +261,7 @@ public class App extends ListenerAdapter {
 			int numSides=-1;
 			int modifier=0;
 			int index;
+			// how many dice?
 			index = p1.indexOf("d");
 			if(index==-1) {
 				// uh oh
@@ -289,6 +290,8 @@ public class App extends ListenerAdapter {
 					// uh oh
 				}
 				numKeep=Integer.parseInt(p1.substring(0,index));
+				// can't keep more than you roll!
+				if(numKeep>numDice) numKeep=numDice; 
 			} else {
 				numKeep = numDice;
 			}
