@@ -20,10 +20,10 @@ import javax.security.auth.login.LoginException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 
 /**
@@ -38,23 +38,20 @@ public class App extends ListenerAdapter {
 	protected Map<String,String> abbreviations = new HashMap<String,String>();
 	protected Map<String,Character5e> actors = new HashMap<String,Character5e>();
 	
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws LoginException {
         Logger logger = LoggerFactory.getLogger(App.class);
         logger.info("Hello World");
         
-        System.out.println( "Hello World!" );
-        
-        
-        JDABuilder builder = new JDABuilder(AccountType.BOT);
+        System.out.println("Hello World!");
+
         String token = readAllBytesJava7(App.class.getResource("token.txt"));
+        JDA jda = JDABuilder.createDefault(token).build();
+        jda.addEventListener(new App());
+        
+        /*
         builder.setToken(token);
-        builder.addEventListener(new App());
-        try {
-			builder.buildAsync();
-		} catch (LoginException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        builder.addEventListeners(new App());
+		builder.buildAsync();*/
     }
 
     private static String readAllBytesJava7(URL filePath) {
@@ -100,16 +97,42 @@ public class App extends ListenerAdapter {
 		event.getChannel().sendMessage(str).queue();
     }
     
-    protected void roll(MessageReceivedEvent event,int numDice,int numSides,int modifier) {
-		String extra = modifier>0 ? "+"+modifier : "";
-    	String str = "`"+numDice+"d"+numSides+extra+"` ";
+    protected void roll(MessageReceivedEvent event,int numDice,int numSides,int numKeep,int modifier) {
+    	int [] rolls = new int[numDice];
+    	
     	Random r = new Random();
+    	for(int i=0;i<numDice;++i) {
+    		rolls[i]=r.nextInt(numSides)+1;
+    	}
+    	// reject some dice
+    	for(int k = numKeep;k<numDice;++k) {
+    		// find the worst dice.
+    		int worst = 0;
+    		for(int i=0;i<numDice;++i) {
+    			if(rolls[i]>0 && rolls[worst]>rolls[i]) {
+    				worst = i;
+    			}
+    		}
+    		rolls[worst] *= -1;  // mark it as rejected but keep the value.
+    	}
+    	
+    	// sum and display
+		String extra = modifier>0 ? "+"+modifier : "";
+    	String str = "`"+numDice+"d"+numSides;
+    	if(numKeep!=numDice) {
+    		str+="k"+numKeep;
+    	}
+		str+=extra+"` ";
     	int sum=0;
     	String insert="";
+    	
     	for(int i=0;i<numDice;++i) {
-    		int die = r.nextInt(numSides)+1;
-    		sum+=die;
-    		str+=insert+die;
+    		if(rolls[i]>0) {
+    			sum+=rolls[i];
+        		str+=insert+rolls[i];
+    		} else {
+        		str+="~~"+insert+(-rolls[i])+"~~";
+    		}
     		insert="+";
     	}
     	if(modifier!=0) {
@@ -121,11 +144,17 @@ public class App extends ListenerAdapter {
     	event.getChannel().sendMessage(str).queue();
     }
     
+    public String getAbbreviation(String arg0) {
+    	String key = abbreviations.get(arg0);
+    	if(key==null) key = arg0;
+    	return key;
+    }
+    
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
     	String message = event.getMessage().getContentDisplay();
-    	if(event.getAuthor().getId().equals(MY_ENTITY_ID) ||
-    		event.getAuthor().getName().equals(MY_ENTITY_NAME)) {
+    	System.out.println("heard:"+message);
+    	if(event.getAuthor().isBot()) {
     		// Ignore me when I talk to myself.  Probably bad advice philosophically but prevents an infinite loop.  
     		return;
     	}
@@ -139,7 +168,7 @@ public class App extends ListenerAdapter {
 
     	String actorName = event.getAuthor().getName();
     	String actorId = event.getAuthor().getId();
-    	System.out.println(actorName+"@"+actorId+"<<"+message);
+    	//System.out.println(actorName+"@"+actorId+"<<"+message);
     	// does the actor exist?
     	if(actors.get(actorId)==null) {
     		// no.  can it be loaded?
@@ -155,20 +184,21 @@ public class App extends ListenerAdapter {
     	Character5e actor = actors.get(actorId);
     	
     	if(message.equals("help")) {
-    		replyToEvent(event,"```css\n"
-    				+PREFIX+"help : This message\n"
-    				+PREFIX+"image : A helpful image for noobs\n" 
-    				+PREFIX+"set S W : Set attribute S to W\n"
-    				+PREFIX+"get S : Show my attribute S\n"
-    				+PREFIX+"add S W : Add W to attribute S\n"
-    				+PREFIX+"sub S W : Subtract W from attribute S\n"
-    				+PREFIX+"roll [Wa]dWb[+/-Wc] : Show result of rolling Wb sided dice Wa times and adding Wc modifier.\n"
-    				+PREFIX+"st S : Roll a Saving Throw for a given attribute S\n"
-    				+PREFIX+"save : Save your attributes for next time.\n"
-    				+PREFIX+"stats : Show all my attributes.\n"
-    				+"\n"
-    				+"S is a string (text), W is a whole number. Stuff [in brackets] is optional.\n"
-    				+"Many attributes have abbreviations - for example, i or int will both equal intelligence.```");
+    		replyToEvent(event,
+    			"```css\n"
+				+PREFIX+"help : This message\n"
+				+PREFIX+"image : A helpful image for noobs\n" 
+				+PREFIX+"set S W : Set attribute S to W\n"
+				+PREFIX+"get S : Show my attribute S\n"
+				+PREFIX+"add S W : Add W to attribute S\n"
+				+PREFIX+"sub S W : Subtract W from attribute S\n"
+				+PREFIX+"roll [Wa]dWb[+/-Wc] : Show result of rolling Wb sided dice Wa times and adding Wc modifier.\n"
+				+PREFIX+"st S : Roll a Saving Throw for a given attribute S\n"
+				+PREFIX+"save : Save your attributes for next time.\n"
+				+PREFIX+"stats : Show all my attributes.\n"
+				+"\n"
+				+"S is a string (text), W is a whole number. Stuff [in brackets] is optional.\n"
+				+"Many attributes have abbreviations - for example, i or int will both equal intelligence.```");
     		
     	} else if(message.equals("ping")) {
     		replyToEvent(event,"pong");
@@ -179,7 +209,7 @@ public class App extends ListenerAdapter {
     	} else if(message.startsWith("get")) {
     		String [] parts = message.split("\\s");
     		if(parts.length!=2) return;
-    		String key = abbreviations.get(parts[1]);
+    		String key = getAbbreviation(parts[1]);
 			Integer value = actor.get(key);
 			if(value==null) {
 				replyToEvent(event,actorName+", I don't know what '"+key+"' means...yet.");
@@ -190,8 +220,7 @@ public class App extends ListenerAdapter {
     	} else if(message.startsWith("set")) {
     		String [] parts = message.split("\\s");
     		if(parts.length!=3) return;
-    		String key = abbreviations.get(parts[1]);
-    		if(key==null) key=parts[1];
+    		String key = getAbbreviation(parts[1]);
     		Integer value = Integer.parseInt(parts[2]);
     		actor.set(key, value);
 			replyToEvent(event,actorName+", your "+key+" is now "+value+".");
@@ -199,8 +228,7 @@ public class App extends ListenerAdapter {
     	} else if(message.startsWith("add")) {
     		String [] parts = message.split("\\s");
     		if(parts.length!=3) return;
-    		String key = abbreviations.get(parts[1]);
-    		if(key==null) key=parts[1];
+    		String key = getAbbreviation(parts[1]);
     		Integer oldValue = actor.get(key);
     		if(oldValue==null) oldValue=0;
     		Integer value = Integer.parseInt(parts[2]);
@@ -211,8 +239,7 @@ public class App extends ListenerAdapter {
     	} else if(message.startsWith("sub")) {
     		String [] parts = message.split("\\s");
     		if(parts.length!=3) return;
-    		String key = abbreviations.get(parts[1]);
-    		if(key==null) key=parts[1];
+    		String key = getAbbreviation(parts[1]);
     		Integer oldValue = actor.get(key);
     		if(oldValue==null) oldValue=0;
     		Integer value = Integer.parseInt(parts[2]);
@@ -220,17 +247,51 @@ public class App extends ListenerAdapter {
     		actor.set(key, newValue);
 			replyToEvent(event,actorName+", your "+key+" is now "+newValue+".");
 			
-    	} else if(message.startsWith("roll")) {
+    	} else if(message.startsWith("roll") 
+    			|| message.contentEquals("r")) {
     		String [] parts = message.split("\\s");
     		if(parts.length!=2) return;
     		
+    		// format is AdB[kC][+D]
+    		// A,B,C,D are whole numbers.
+    		// C and D are optional.
 			String p1 = parts[1];
 			int numDice=1;
+			int numKeep=-1;
 			int numSides=-1;
 			int modifier=0;
-			// find part before d
-			int dIndex=p1.indexOf('d');
-			if(dIndex>0) numDice=Integer.parseInt(p1.substring(0,dIndex));
+			int index;
+			index = p1.indexOf("d");
+			if(index==-1) {
+				// uh oh
+			}
+			numDice=Integer.parseInt(p1.substring(0,index));
+			// remove Ad and anything before it
+			p1 = p1.substring(index+1);
+			// read B
+			for(index=0;index<p1.length();++index) {
+				if(!Character.isDigit(p1.charAt(index))) break;
+			}
+			if(index==p1.length()) {
+				// uh oh
+			}
+			numSides=Integer.parseInt(p1.substring(0,index));
+			// is k here?
+			index = p1.indexOf("k");
+			if(index!=-1) {
+				// remove k and anything before it
+				p1 = p1.substring(index+1);
+				// read C
+				for(index=0;index<p1.length();++index) {
+					if(!Character.isDigit(p1.charAt(index))) break;
+				}
+				if(index==p1.length()) {
+					// uh oh
+				}
+				numKeep=Integer.parseInt(p1.substring(0,index));
+			} else {
+				numKeep = numDice;
+			}
 			// look for optional modifier
 			Pattern pattern = Pattern.compile("[\\+\\-]");
 			Matcher matcher = pattern.matcher(p1);
@@ -240,23 +301,23 @@ public class App extends ListenerAdapter {
 				plusIndex = matcher.start();
     			modifier=Integer.parseInt(p1.substring(plusIndex));
 			}
-			numSides=Integer.parseInt(p1.substring(dIndex+1,plusIndex));
-			
-			if(numDice>0 && numSides>0) {
-				roll(event,numDice,numSides,modifier);
+			if(numDice>0 && numSides>0 && numKeep>0) {
+				roll(event,numDice,numSides,numKeep,modifier);
 			}
 			
-    	} else if(message.equals("stats")) {
+    	} else if(message.contentEquals("stats")) {
+    		// all stats
     		replyToEvent(event,"```"+actor.toString()+"```");
     	} else if(message.startsWith("st")) {
+    		// saving throw
     		String [] parts = message.split("\\s");
     		if(parts.length!=2) return;
-    		String key = abbreviations.get(parts[1]);
+    		String key = getAbbreviation(parts[1]);
     		Integer ability = actor.get(key);
     		if(ability == null) {
     			replyToEvent(event,actorName+", what's '"+key+"'?");
     		} else {
-    			roll(event,1,20,ability);
+    			roll(event,1,20,1,ability);
     		}
     		
     	} else if(message.startsWith("save")) {
