@@ -6,7 +6,7 @@ public class SavingThrow extends DNDAction {
 	public void execute(DNDEvent event) {
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=2) return;
-		String key = getAbbreviation(parts[1]);
+		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer ability = event.actor.get(key);
 		if(ability == null) {
 			event.reply(event.actorName+", what's '"+key+"'?");

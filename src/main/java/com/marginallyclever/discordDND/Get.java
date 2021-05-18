@@ -6,7 +6,7 @@ public class Get extends DNDAction {
 	public void execute(DNDEvent event) {
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=2) return;
-		String key = getAbbreviation(parts[1]);
+		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer value = event.actor.get(key);
 		if(value==null) {
 			event.reply(event.actorName+", I don't know what '"+key+"' means...yet.");

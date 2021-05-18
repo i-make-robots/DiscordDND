@@ -6,7 +6,7 @@ public class Subtract extends DNDAction {
 	public void execute(DNDEvent event) {
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=3) return;
-		String key = getAbbreviation(parts[1]);
+		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer oldValue = event.actor.get(key);
 		if(oldValue==null) oldValue=0;
 		Integer value = Integer.parseInt(parts[2]);

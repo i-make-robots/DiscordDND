@@ -38,16 +38,8 @@ public class Roll extends DNDAction {
 			else numKeep=numDice;
 			if(m.group(4) !=null && !m.group(4).isEmpty()) modifier = Integer.parseInt(m.group(4));
 
-			if(numDice>0 && numSides>0 && numKeep<=numDice) {
-				roll(event,numDice,numSides,numKeep,modifier);
-				return;
-			} else if(numDice<=0) {
-				event.reply(numDice+" dice?  https://en.meming.world/images/en/thumb/5/53/Thanos%27_Impossible.jpg/300px-Thanos%27_Impossible.jpg");
-			} else if(numSides<=1) {
-				event.reply(numSides + " sides?  https://i.pinimg.com/originals/3a/58/61/3a5861c95871f4063a7f57a2ed97988a.jpg");
-			} else if(numKeep>numDice) {
-				event.reply("keep more than I roll?  https://i.imgflip.com/23cs0d.jpg");
-			}
+			roll(event,numDice,numSides,numKeep,modifier);
+			return;
 		}
 	}
 
@@ -83,7 +75,6 @@ public class Roll extends DNDAction {
 
     // keep some dice.  Keep it organic looking by not sorting the list.
 	// mark the rejects by making them negative amounts.
-    @SuppressWarnings("unused")
     private void keepSomeLowRolls(int [] rolls,int numKeep) {
     	if(numKeep==rolls.length) return;
     	
@@ -105,13 +96,35 @@ public class Roll extends DNDAction {
      * @param modifier an additional modifier bonus to add after the keeps.
      */
     public void roll(DNDEvent event,int numDice,int numSides,int numKeep,int modifier) {
+    	// sanity checks
+		if(numDice<=0) {
+			event.reply(numDice+" dice?  https://en.meming.world/images/en/thumb/5/53/Thanos%27_Impossible.jpg/300px-Thanos%27_Impossible.jpg");
+			return;
+		} else if(numSides<=0) {
+			event.reply(numSides + " sides?  https://i.pinimg.com/originals/3a/58/61/3a5861c95871f4063a7f57a2ed97988a.jpg");
+			return;
+		} else if(Math.abs(numKeep)>numDice) {
+			event.reply("keep "+Math.abs(numKeep)+"?  https://i.imgflip.com/23cs0d.jpg");
+			return;
+		}
+
+		
     	int [] rolls = rollDice(numDice,numSides);
-    	keepSomeHighRolls(rolls,numKeep);
+    	if(numKeep!=numDice) {
+    		if(numKeep>0)	keepSomeHighRolls(rolls,numKeep);
+    		else			keepSomeLowRolls(rolls,-numKeep);
+    	}
     	
     	// sum and display
     	int sum=0;
+    	boolean found20 = false;
+    	boolean found1 = false;
     	for(int i=0;i<numDice;++i) {
-    		if(rolls[i]>0) sum+=rolls[i];
+    		if(rolls[i]>0) {
+    			sum+=rolls[i];
+    			if(rolls[i]==20) found20=true;
+    			if(rolls[i]==1) found1=true;
+    		}
     	}
     	sum+= modifier;
     			
@@ -135,7 +148,17 @@ public class Roll extends DNDAction {
     	if(modifier!=0) message+=" ("+extra+")";
     	message+=" = "+bold(Integer.toString(sum));
 
-		event.reply(event.actorName + ": "+message);
+    	String nat20 = found20?getNat20Meme():"";
+    	String nat1  = found1 ?getNat1Meme():"";
+		event.reply(event.actorName + ": "+message+nat20+nat1);
+    }
+    
+    private String getNat20Meme() {
+    	return "https://discord.com/channels/690227751696859319/839193591028252752/844331758232666152";
+    }
+    
+    private String getNat1Meme() {
+    	return "https://i.pinimg.com/originals/4f/d7/7f/4fd77f1b87b9a2a60dc69d3b8dfca767.jpg";
     }
     
     private String bold(String a) {
