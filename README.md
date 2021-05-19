@@ -1,9 +1,9 @@
 # DiscordDND
- My Discord DND personal assistant
+ My Discord DND personal assistant.
 
 ~help : This message
 
-~image : A helpful image for noobs
+~image : A helpful image for people new to DND.
 
 ~set S W : Set attribute S to W
 
@@ -13,7 +13,7 @@
 
 ~get S : Show my attribute S
 
-~roll [Wa]dWb[+/-Wc] : Show result of rolling Wb sided dice Wa times and adding Wc modifier.
+~roll [a]db[kc]\[+/-e] : Show result of rolling 'b' sided dice 'a' times, keeping 'c' of them, and adding 'e'.  if c>0 the best c are kept.  if c<0 the worst (-c) are kept.    [parts in braces are optional].
 
 ~st S : Roll a Saving Throw for a given attribute S
 
