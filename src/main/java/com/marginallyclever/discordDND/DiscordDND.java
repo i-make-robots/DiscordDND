@@ -20,6 +20,19 @@ import javax.security.auth.login.LoginException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marginallyclever.discordDND.actions.Add;
+import com.marginallyclever.discordDND.actions.Get;
+import com.marginallyclever.discordDND.actions.Help;
+import com.marginallyclever.discordDND.actions.Image;
+import com.marginallyclever.discordDND.actions.Insult;
+import com.marginallyclever.discordDND.actions.Ping;
+import com.marginallyclever.discordDND.actions.Roll;
+import com.marginallyclever.discordDND.actions.Save;
+import com.marginallyclever.discordDND.actions.SavingThrow;
+import com.marginallyclever.discordDND.actions.Set;
+import com.marginallyclever.discordDND.actions.Stats;
+import com.marginallyclever.discordDND.actions.Subtract;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -37,31 +50,27 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class DiscordDND extends ListenerAdapter {
 	static final String MY_ENTITY_ID = "698232700024127528";
 	static final String MY_ENTITY_NAME = "Simply DND 5E";
-	static final String PREFIX = "~";
+	
+	static public final String PREFIX = "~";
 
 	private Map<String,Character5e> actors = new HashMap<>();
 	private ArrayList<DNDAction> actions = new ArrayList<>();
 	
     public static void main( String[] args ) throws LoginException {
-        Logger logger = LoggerFactory.getLogger(DiscordDND.class);
-        logger.info("Hello World");
-        
         System.out.println("Hello World!");
 
-        String token = readAllBytesJava7(DiscordDND.class.getResource("token.txt"));
+        String token = readAllBytesFromFile(DiscordDND.class.getResource("token.txt"));
         JDA jda = JDABuilder.createDefault(token).build();
         jda.addEventListener(new DiscordDND());
     }
 
-    private static String readAllBytesJava7(URL filePath) {
+    private static String readAllBytesFromFile(URL filePath) {
         String content = "";
         try {
         	System.out.println("Token search: "+filePath.toURI());
             content = new String ( Files.readAllBytes( Paths.get( filePath.toURI() ) ) );
-        }  catch (IOException e) {
+        }  catch (Exception e) {
             e.printStackTrace();
-        } catch (URISyntaxException e) {
-			e.printStackTrace();
 		}
         return content;
     }
@@ -101,10 +110,11 @@ public class DiscordDND extends ListenerAdapter {
     
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-    	String message = event.getMessage().getContentDisplay();
-    	
 		// Ignore me when I talk to myself.  Probably bad advice philosophically but prevents an infinite loop.  
     	if(event.getAuthor().isBot()) return;
+
+    	String message = event.getMessage().getContentDisplay();
+    	
     	// does it have the prefix?
     	if(!message.startsWith(PREFIX)) return;
     	// remove the prefix and continue

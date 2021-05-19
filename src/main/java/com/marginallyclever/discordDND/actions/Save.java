@@ -1,4 +1,8 @@
-package com.marginallyclever.discordDND;
+package com.marginallyclever.discordDND.actions;
+
+import com.marginallyclever.discordDND.DNDAction;
+import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discordDND.DiscordDND;
 
 public class Save extends DNDAction {
 

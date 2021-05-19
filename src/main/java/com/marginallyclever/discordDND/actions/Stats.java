@@ -1,4 +1,7 @@
-package com.marginallyclever.discordDND;
+package com.marginallyclever.discordDND.actions;
+
+import com.marginallyclever.discordDND.DNDAction;
+import com.marginallyclever.discordDND.DNDEvent;
 
 public class Stats extends DNDAction {
 

@@ -1,4 +1,4 @@
-package com.marginallyclever.discordDND;
+package com.marginallyclever.discordDND.actions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,37 +6,43 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Roll extends DNDAction {
+import com.marginallyclever.discordDND.DNDAction;
+import com.marginallyclever.discordDND.DNDEvent;
 
-	@Override
-	public void execute(DNDEvent event) {
-	    // remove all whitespace and the roll command from the start
-		String [] parts = event.message.split("\\s");
+public class Roll extends DNDAction {
+    // remove all whitespace and the roll command from the start
+	private String sanitizeMessage(String input) {
+		String [] parts = input.split("\\s");
 		ArrayList<String> list1 = new ArrayList<String>();
 	    Collections.addAll(list1, parts);
 	    list1.remove(0);
-	    String newMessage = "";
+	    String output = "";
 		for(int i=0;i<list1.size();++i) {
-			newMessage += list1.get(i).trim();
+			output += list1.get(i).trim();
 		}
-		
-		System.out.println("roll="+newMessage);
-		int numDice=1;
-		int numKeep=1;
-		int numSides=20;
-		int modifier=0;
-		
+		return output;
+	}
+	
+	@Override
+	public void execute(DNDEvent event) {
+		String saneMessage = sanitizeMessage(event.message);
+		//System.out.println("roll="+saneMessage);
+
 		Pattern p = Pattern.compile("([\\+\\-]?\\d+)?(d[\\+\\-]?\\d+)(k[\\+\\-]?\\d+)?([\\+\\-]\\d+)?");
-		Matcher m = p.matcher(newMessage);
-		while(m.find()) {
-			for(int i=0;i<m.groupCount()+1;++i) {
-				System.out.println(i+" > "+m.group(i));
-			}
-			if(m.group(1) !=null && !m.group(1).isEmpty()) numDice  = Integer.parseInt(m.group(1));
-			if(m.group(2) !=null && !m.group(2).isEmpty()) numSides = Integer.parseInt(m.group(2).substring(1));
-			if(m.group(3) !=null && !m.group(3).isEmpty()) numKeep  = Integer.parseInt(m.group(3).substring(1));
+		Matcher m = p.matcher(saneMessage);
+		if(m.find()) {
+			//for(int i=0;i<m.groupCount()+1;++i) System.out.println(i+" > "+m.group(i));
+			
+			int numDice=1;
+			int numKeep;
+			int numSides=20;
+			int modifier=0;
+			
+			if(m.group(1)!=null && !m.group(1).isEmpty()) numDice  = Integer.parseInt(m.group(1));
+			if(m.group(2)!=null && !m.group(2).isEmpty()) numSides = Integer.parseInt(m.group(2).substring(1));
+			if(m.group(3)!=null && !m.group(3).isEmpty()) numKeep  = Integer.parseInt(m.group(3).substring(1));
 			else numKeep=numDice;
-			if(m.group(4) !=null && !m.group(4).isEmpty()) modifier = Integer.parseInt(m.group(4));
+			if(m.group(4)!=null && !m.group(4).isEmpty()) modifier = Integer.parseInt(m.group(4));
 
 			roll(event,numDice,numSides,numKeep,modifier);
 			return;
@@ -62,12 +68,10 @@ public class Roll extends DNDAction {
     // keep some dice.  Keep it organic looking by not sorting the list.
 	// mark the rejects by making them negative amounts.
     private void keepSomeHighRolls(int [] rolls,int numKeep) {
-    	if(numKeep==rolls.length) return;
-    	
     	for(int k = numKeep;k<rolls.length;++k) {
     		int worst = 0;
     		for(int i=0;i<rolls.length;++i) {
-    			if(rolls[i]>0 && rolls[worst]>rolls[i]) worst = i;
+    			if(rolls[i]>0 && rolls[worst] > rolls[i]) worst = i;
     		}
     		rolls[worst] *= -1;  // mark it as rejected but keep the value.
     	}
@@ -76,12 +80,10 @@ public class Roll extends DNDAction {
     // keep some dice.  Keep it organic looking by not sorting the list.
 	// mark the rejects by making them negative amounts.
     private void keepSomeLowRolls(int [] rolls,int numKeep) {
-    	if(numKeep==rolls.length) return;
-    	
     	for(int k = numKeep;k<rolls.length;++k) {
     		int worst = 0;
     		for(int i=0;i<rolls.length;++i) {
-    			if(rolls[i]>0 && rolls[worst]<rolls[i]) worst = i;
+    			if(rolls[i]>0 && rolls[worst] < rolls[i]) worst = i;
     		}
     		rolls[worst] *= -1;  // mark it as rejected but keep the value.
     	}
@@ -111,54 +113,73 @@ public class Roll extends DNDAction {
 		
     	int [] rolls = rollDice(numDice,numSides);
     	if(numKeep!=numDice) {
-    		if(numKeep>0)	keepSomeHighRolls(rolls,numKeep);
-    		else			keepSomeLowRolls(rolls,-numKeep);
+    		if(numKeep>0) keepSomeHighRolls(rolls,numKeep);
+    		else          keepSomeLowRolls(rolls,-numKeep);
     	}
     	
-    	// sum and display
-    	int sum=0;
-    	boolean found20 = false;
-    	boolean found1 = false;
-    	for(int i=0;i<numDice;++i) {
-    		if(rolls[i]>0) {
-    			sum+=rolls[i];
-    			if(rolls[i]==20) found20=true;
-    			if(rolls[i]==1) found1=true;
-    		}
-    	}
-    	sum+= modifier;
-    			
-    	String extra = "";
-    	String message = numDice+"d"+numSides+"k"+numKeep;
-    	if(modifier!=0) {
-    		extra = String.format("%+d", modifier);
-    		message += extra;	
-    	}
-    	message+=" = ";
-		
-    	String insert="";
-    	String thisRoll;
-    	for(int i=0;i<numDice;++i) {
-    		thisRoll = Integer.toString(Math.abs(rolls[i]));
-    		if(rolls[i]<0) thisRoll = strikethrough(thisRoll);
-    		message+=insert+thisRoll;
-    		insert=" + ";
-    	}
-    	// add modifier
-    	if(modifier!=0) message+=" ("+extra+")";
-    	message+=" = "+bold(Integer.toString(sum));
-
-    	String nat20 = found20?getNat20Meme():"";
-    	String nat1  = found1 ?getNat1Meme():"";
-		event.reply(event.actorName + ": "+message+nat20+nat1);
+		event.reply(event.actorName + ": "+renderResults(rolls,modifier));
     }
     
-    private String getNat20Meme() {
+    private String renderResults(int [] rolls,int modifier) {
+    	int sum = sumKeptRolls(rolls) + modifier;
+
+    	String rollResults = "";
+    	String insert="";
+    	for(int i=0;i<rolls.length;++i) {
+    		String thisRoll = Integer.toString(Math.abs(rolls[i]));
+    		if(rolls[i]<0) thisRoll = strikethrough(thisRoll);
+    		rollResults+=insert+thisRoll;
+    		insert=" + ";
+    	}
+    	if(modifier!=0) rollResults += String.format("(%+d)", modifier);
+
+    	return rollResults + " = "+bold(Integer.toString(sum)) + renderExtras(rolls);
+    }
+    
+    private String renderExtras(int [] rolls) {
+    	boolean found20 = false;
+    	boolean found1 = false;
+    	boolean missed20 = false;
+    	boolean missed1 = false;
+    	
+    	for(int i=0;i<rolls.length;++i) {
+    		if(rolls[i]>0) {
+    			if(rolls[i]==20) found20=true;
+    			if(rolls[i]==1) found1=true;
+    		} else {
+    			if(rolls[i]==20) missed20=true;
+    			if(rolls[i]==1) missed1=true;
+    		}
+    	}
+    			
+    	return (found20 ?getNat20Meme()    :"")
+    		+  (found1  ?getNat1Meme()     :"")
+    		+  (missed20?getNat20MissMeme():"")
+    		+  (missed1 ?getNat1MissMeme() :"");
+    }
+    
+    private int sumKeptRolls(int[] rolls) {
+    	int sum=0;
+    	for(int i=0;i<rolls.length;++i) {
+    		if(rolls[i]>0) sum+=rolls[i];
+    	}
+		return sum;
+	}
+
+	private String getNat20Meme() {
     	return "https://discord.com/channels/690227751696859319/839193591028252752/844331758232666152";
     }
     
     private String getNat1Meme() {
     	return "https://i.pinimg.com/originals/4f/d7/7f/4fd77f1b87b9a2a60dc69d3b8dfca767.jpg";
+    }
+    
+    private String getNat20MissMeme() {
+    	return "";
+    }
+    
+    private String getNat1MissMeme() {
+    	return "https://tenor.com/view/matrix-keanu-reeves-dodge-bullets-dodging-gif-12076401";
     }
     
     private String bold(String a) {
