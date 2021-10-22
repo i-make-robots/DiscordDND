@@ -14,4 +14,8 @@ public class Ping extends DNDAction {
 	public String[] getNames() {
 		return new String[] { "ping" };
 	}
+	
+	public String getHelp() {
+		return "ping - get back a pong, prove the bot is alive.";
+	}
 }

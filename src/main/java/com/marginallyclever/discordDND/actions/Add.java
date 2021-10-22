@@ -8,6 +8,8 @@ public class Add extends DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
+		if(event.actor==null) return;
+		
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=3) return;
 		String key = DNDAbbreviationsList.get(parts[1]);
@@ -22,5 +24,9 @@ public class Add extends DNDAction {
 	@Override
 	public String[] getNames() {
 		return new String[] { "add" };
+	}
+	
+	public String getHelp() {
+		return "add [stat] [amount] - add [amount] to [stat].";
 	}
 }

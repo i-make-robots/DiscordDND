@@ -8,6 +8,8 @@ public class Get extends DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
+		if(event.actor==null) return;
+		
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=2) return;
 		String key = DNDAbbreviationsList.get(parts[1]);
@@ -22,5 +24,8 @@ public class Get extends DNDAction {
 	@Override
 	public String[] getNames() {
 		return new String[] { "get" };
+	}
+	public String getHelp() {
+		return "get [stat] - get the value of [stat].";
 	}
 }

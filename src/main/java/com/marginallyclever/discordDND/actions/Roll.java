@@ -53,6 +53,10 @@ public class Roll extends DNDAction {
 	public String[] getNames() {
 		return new String[] { "roll","r" };
 	}
+	
+	public String getHelp() {
+		return "roll [<a>]d<b>[k<c>][+/-<e>] - roll <a> (default 1) dice with <b> sides, keep <c> (default a), and add or subtract <e>.";
+	}
 
     private int [] rollDice(int numDice,int numSides) {
     	int [] rolls = new int[numDice];
@@ -131,7 +135,7 @@ public class Roll extends DNDAction {
     		rollResults+=insert+thisRoll;
     		insert=" + ";
     	}
-    	if(modifier!=0) rollResults += String.format("(%+d)", modifier);
+    	if(modifier!=0) rollResults += String.format(" (%+d)", modifier);
 
     	return rollResults + " = "+bold(Integer.toString(sum)) + renderExtras(rolls);
     }
@@ -152,10 +156,11 @@ public class Roll extends DNDAction {
     		}
     	}
     			
-    	return (found20 ?getNat20Meme()    :"")
-    		+  (found1  ?getNat1Meme()     :"")
-    		+  (missed20?getNat20MissMeme():"")
-    		+  (missed1 ?getNat1MissMeme() :"");
+    	return " "
+    	    + ((found20&&rolls.length==1)?getNat20Meme():"")
+    		+ ((found1 &&rolls.length==1)?getNat1Meme() :"")
+    		+ (missed20?getNat20MissMeme():"")
+    		+ (missed1 ?getNat1MissMeme() :"");
     }
     
     private int sumKeptRolls(int[] rolls) {
@@ -167,7 +172,7 @@ public class Roll extends DNDAction {
 	}
 
 	private String getNat20Meme() {
-    	return "https://discord.com/channels/690227751696859319/839193591028252752/844331758232666152";
+    	return "https://pics.me.me/happiness-is-a-natural-20-or-at-least-a-moment-2761750.png";
     }
     
     private String getNat1Meme() {
@@ -175,7 +180,7 @@ public class Roll extends DNDAction {
     }
     
     private String getNat20MissMeme() {
-    	return "";
+    	return "https://i.kym-cdn.com/entries/icons/mobile/000/009/976/First_World_Problems.jpg";
     }
     
     private String getNat1MissMeme() {

@@ -8,6 +8,8 @@ public class Save extends DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
+		if(event.actor==null) return;
+		
 		DiscordDND.saveCharacter(event.actorName,event.actor);
 		event.reply(event.actorName+", I'll always treasure these moments together.");
 	}
@@ -15,5 +17,9 @@ public class Save extends DNDAction {
 	@Override
 	public String[] getNames() {
 		return new String[] { "save" };
+	}
+	
+	public String getHelp() {
+		return "save - save your stats";
 	}
 }

@@ -3,27 +3,21 @@ package com.marginallyclever.discordDND;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import javax.security.auth.login.LoginException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.marginallyclever.discordDND.actions.Add;
 import com.marginallyclever.discordDND.actions.Get;
 import com.marginallyclever.discordDND.actions.Help;
 import com.marginallyclever.discordDND.actions.Image;
+import com.marginallyclever.discordDND.actions.Initiative;
 import com.marginallyclever.discordDND.actions.Insult;
 import com.marginallyclever.discordDND.actions.Ping;
 import com.marginallyclever.discordDND.actions.Roll;
@@ -35,6 +29,7 @@ import com.marginallyclever.discordDND.actions.Subtract;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -54,7 +49,7 @@ public class DiscordDND extends ListenerAdapter {
 	static public final String PREFIX = "~";
 
 	private Map<String,Character5e> actors = new HashMap<>();
-	private ArrayList<DNDAction> actions = new ArrayList<>();
+	static public ArrayList<DNDAction> actions = new ArrayList<>();
 	
     public static void main( String[] args ) throws LoginException {
         System.out.println("Hello World!");
@@ -82,6 +77,7 @@ public class DiscordDND extends ListenerAdapter {
 		actions.add(new Add());
 		actions.add(new Subtract());
 		actions.add(new Image());
+		actions.add(new Initiative());
 		actions.add(new Insult());
 		actions.add(new Ping());
 		actions.add(new Roll());
@@ -95,6 +91,7 @@ public class DiscordDND extends ListenerAdapter {
 		if(actors.get(actorId)==null) {
 			// No.  Does it exist on disk?
 			if(iHaveSeenCharacterBefore(actorName)==false) {
+				System.out.println(actorName + " is new to me...");
 				// No.  Make a new one.
 	    		Character5e newCharacter = new Character5e();
 				saveCharacter(actorName,newCharacter);
@@ -120,12 +117,21 @@ public class DiscordDND extends ListenerAdapter {
     	// remove the prefix and continue
     	message = message.substring(PREFIX.length());
 
-    	String actorName = event.getMember().getNickname();
-    	String actorId = event.getAuthor().getId();
-    	//System.out.println(actorName+"@"+actorId+"<<"+message);
-    	Character5e actor = loadActor(actorId,actorName);
-    	
-    	DNDEvent dndEvent = new DNDEvent(message,event,actorName,actor);
+    	DNDEvent dndEvent;
+    	if(event.isFromType(ChannelType.PRIVATE)) {
+    		System.out.println("private");
+	    	String actorId = event.getAuthor().getId();
+	    	String actorName = event.getAuthor().getName();
+	    	
+	    	dndEvent = new DNDEvent(message,event,actorName);
+    	} else {
+	    	String actorName = event.getMember().getNickname();
+	    	String actorId = event.getAuthor().getId();
+	    	//System.out.println(actorName+"@"+actorId+"<<"+message);
+	    	Character5e actor = loadActor(actorId,actorName);
+	    	
+	    	dndEvent = new DNDEvent(message,event,actorName,actor);
+    	}
     	
     	String [] parts = message.split(" ");
     	for( DNDAction act : actions ) {
@@ -136,42 +142,46 @@ public class DiscordDND extends ListenerAdapter {
     			}
     		}
     	}
-
+    	
     	// whois [name] tells any notes about that actor?
     	// add [name] to list of actors
     	// note [name] [string] - adds note to actor
     	
     	super.onMessageReceived(event);
     }
+
+	static public String actorNameToFileName(String actorName) {
+		return actorName+".5e";
+	}
     		
-	static public Character5e loadCharacter(String filepath) {
+	static public Character5e loadCharacter(String actorName) {
 		Character5e actor = null;
         try {
-            FileInputStream fileOut = new FileInputStream(filepath+".5e");
+            FileInputStream fileOut = new FileInputStream(actorNameToFileName(actorName));
             ObjectInputStream objectOut = new ObjectInputStream(fileOut);
             actor = (Character5e)objectOut.readObject();
             objectOut.close();
-            System.out.println(filepath+" loaded.");
+            System.out.println(actorName+" loaded.");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return actor;
 	}
-
-	static public void saveCharacter(String filepath,Character5e actor) {
+	
+	static public void saveCharacter(String actorName,Character5e actor) {
         try {
-            FileOutputStream fileOut = new FileOutputStream(filepath+".5e");
+            FileOutputStream fileOut = new FileOutputStream(actorNameToFileName(actorName));
             ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
             objectOut.writeObject(actor);
             objectOut.close();
-            System.out.println(filepath+" saved.");
+            System.out.println(actorName+" saved.");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 	}
 	
-	private boolean iHaveSeenCharacterBefore(String filepath) {
-		File f = new File(filepath);
+	private boolean iHaveSeenCharacterBefore(String actorName) {
+		File f = new File(actorNameToFileName(actorName));
 		return f.exists();
 	}
 }

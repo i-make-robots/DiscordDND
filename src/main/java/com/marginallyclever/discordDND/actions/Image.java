@@ -7,7 +7,6 @@ public class Image extends DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -15,5 +14,8 @@ public class Image extends DNDAction {
 	public String[] getNames() {
 		return new String[] { "image" };
 	}
-
+	
+	public String getHelp() {
+		return "image - show a helpful guide to DND.";
+	}
 }

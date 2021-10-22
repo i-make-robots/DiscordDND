@@ -8,6 +8,8 @@ public class Set extends DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
+		if(event.actor==null) return;
+		
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=3) return;
 		String key = DNDAbbreviationsList.get(parts[1]);
@@ -19,5 +21,9 @@ public class Set extends DNDAction {
 	@Override
 	public String[] getNames() {
 		return new String[] { "set" };
+	}
+	
+	public String getHelp() {
+		return "set [stat] [amount] - set [stat] to [amount].";
 	}
 }
