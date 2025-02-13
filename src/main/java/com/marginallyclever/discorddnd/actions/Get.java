@@ -1,8 +1,8 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAbbreviationsList;
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAbbreviationsList;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class Get extends DNDAction {
 
@@ -15,9 +15,9 @@ public class Get extends DNDAction {
 		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer value = event.actor.get(key);
 		if(value==null) {
-			event.reply(event.actorName+", I don't know what '"+key+"' means...yet.");
+			event.reply(event.characterName +", I don't know what '"+key+"' means...yet.");
 		} else {
-			event.reply(event.actorName+", your "+key+" is "+value+".");
+			event.reply(event.characterName +", your "+key+" is "+value+".");
 		}
 	}
 

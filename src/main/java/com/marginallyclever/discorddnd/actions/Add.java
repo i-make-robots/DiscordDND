@@ -1,8 +1,8 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAbbreviationsList;
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAbbreviationsList;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class Add extends DNDAction {
 
@@ -18,7 +18,7 @@ public class Add extends DNDAction {
 		Integer value = Integer.parseInt(parts[2]);
 		Integer newValue = oldValue + value;
 		event.actor.set(key, newValue);
-		event.reply(event.actorName+", your "+key+" is now "+newValue+".");
+		event.reply(event.characterName +", your "+key+" is now "+newValue+".");
 	}
 
 	@Override

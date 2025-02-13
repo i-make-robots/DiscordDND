@@ -1,8 +1,8 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAbbreviationsList;
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAbbreviationsList;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class SavingThrow extends DNDAction {
 
@@ -15,7 +15,7 @@ public class SavingThrow extends DNDAction {
 		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer ability = event.actor.get(key);
 		if(ability == null) {
-			event.reply(event.actorName+", what's '"+key+"'?");
+			event.reply(event.characterName +", what's '"+key+"'?");
 		} else {
 			(new Roll()).roll(event,1,20,1,ability);
 		}

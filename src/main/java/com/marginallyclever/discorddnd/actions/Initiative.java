@@ -1,12 +1,13 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 /**
  * Rolls initiative, but doesn't know player's initiative bonus or other effects.
@@ -14,16 +15,18 @@ import net.dv8tion.jda.api.entities.Member;
  *
  */
 public class Initiative extends DNDAction {
-	ArrayList<String> names = new ArrayList<String>();
+	ArrayList<String> names = new ArrayList<>();
 	
 	@Override
 	public void execute(DNDEvent event) {
-		List<Member> members = event.event.getTextChannel().getMembers();
-		
-		members.forEach((m)->{
-			names.add(m.getNickname());
-		});
-		
+		var channel = event.event.getChannel();
+		TextChannel tc = channel.asTextChannel();
+		var members = tc.getMembers();
+		members.forEach(m -> names.add(m.getNickname()) );
+
+		/**
+		 * extra names to add.  good for npcs, monsters, etc.
+		 */
 		String [] elements = event.message.split("\b");
 		if(elements.length>1) {
 			try { 
@@ -33,17 +36,18 @@ public class Initiative extends DNDAction {
 				}
 			} catch(Exception e) {}
 		}
-		
-		String msg="initiative: ";
+
+		StringBuilder sb = new StringBuilder("initiative: ");
+
 		String add="";
-		while(names.size()>0) {
+		while(!names.isEmpty()) {
 			String n = names.remove((int)(Math.random()*names.size()));
 			if(n==null || n.isEmpty()) continue;
-			msg+=add+n;
+			sb.append(add).append(n);
 			add=", ";
 		}
 		
-		event.reply(msg);
+		event.reply(sb.toString());
 	}
 
 	@Override

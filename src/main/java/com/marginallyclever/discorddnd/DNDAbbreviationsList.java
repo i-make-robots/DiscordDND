@@ -1,4 +1,4 @@
-package com.marginallyclever.discordDND;
+package com.marginallyclever.discorddnd;
 
 import java.util.HashMap;
 import java.util.Map;

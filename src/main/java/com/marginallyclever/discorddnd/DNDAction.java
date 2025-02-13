@@ -1,4 +1,4 @@
-package com.marginallyclever.discordDND;
+package com.marginallyclever.discorddnd;
 
 public abstract class DNDAction {
 	abstract public String [] getNames();

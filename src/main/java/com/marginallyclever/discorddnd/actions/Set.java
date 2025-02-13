@@ -1,8 +1,8 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAbbreviationsList;
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAbbreviationsList;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class Set extends DNDAction {
 
@@ -15,7 +15,7 @@ public class Set extends DNDAction {
 		String key = DNDAbbreviationsList.get(parts[1]);
 		Integer value = Integer.parseInt(parts[2]);
 		event.actor.set(key, value);
-		event.reply(event.actorName+", your "+key+" is now "+value+".");
+		event.reply(event.characterName +", your "+key+" is now "+value+".");
 	}
 
 	@Override

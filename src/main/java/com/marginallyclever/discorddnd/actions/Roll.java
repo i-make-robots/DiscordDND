@@ -1,4 +1,4 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class Roll extends DNDAction {
     // remove all whitespace and the roll command from the start
@@ -121,7 +121,7 @@ public class Roll extends DNDAction {
     		else          keepSomeLowRolls(rolls,-numKeep);
     	}
     	
-		event.reply(event.actorName + ": "+renderResults(rolls,modifier));
+		event.reply(event.characterName + ": "+renderResults(rolls,modifier));
     }
     
     private String renderResults(int [] rolls,int modifier) {

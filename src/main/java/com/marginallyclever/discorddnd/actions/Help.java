@@ -1,8 +1,8 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
-import com.marginallyclever.discordDND.DiscordDND;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
+import com.marginallyclever.discorddnd.DiscordDND;
 
 public class Help extends DNDAction {
 	@Override

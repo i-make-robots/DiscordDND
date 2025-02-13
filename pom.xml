@@ -16,14 +16,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>jcenter</id>
-			<name>jcenter-bintray</name>
-			<url>https://jcenter.bintray.com</url>
-		</repository>
-	</repositories>
-
 	<build>
 		<pluginManagement>
 		  <plugins>
@@ -57,28 +49,21 @@
 		<dependency>
 		    <groupId>net.dv8tion</groupId>
 		    <artifactId>JDA</artifactId>
-		    <version>4.2.0_242</version>
+		    <version>5.3.0</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/org.tritonus/tritonus-dsp -->
-		<dependency>
-		    <groupId>org.tritonus</groupId>
-		    <artifactId>tritonus-dsp</artifactId>
-		    <version>0.3.6</version>
-		</dependency>
-		
-        <dependency>
-           <groupId>com.jagrosh</groupId>
-           <artifactId>jda-utilities</artifactId>
-           <version>2.1.2</version>
-           <scope>compile</scope>
-           <type>pom</type>
-        </dependency>
 
+		<!-- for logging -->
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-simple</artifactId>
-		    <version>1.7.12</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.16</version>
+		</dependency>
+		<!-- logging -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.5.16</version>
 		</dependency>
 	</dependencies>
 </project>

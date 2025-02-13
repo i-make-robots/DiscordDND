@@ -1,7 +1,7 @@
-package com.marginallyclever.discordDND.actions;
+package com.marginallyclever.discorddnd.actions;
 
-import com.marginallyclever.discordDND.DNDAction;
-import com.marginallyclever.discordDND.DNDEvent;
+import com.marginallyclever.discorddnd.DNDAction;
+import com.marginallyclever.discorddnd.DNDEvent;
 
 public class Stats extends DNDAction {
 
@@ -9,7 +9,7 @@ public class Stats extends DNDAction {
 	public void execute(DNDEvent event) {
 		if(event.actor==null) return;
 		
-		event.reply("```"+event.actor.toString()+"```");
+		event.reply("```"+event.actor+"```");
 	}
 
 	@Override
