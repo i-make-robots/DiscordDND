@@ -44,7 +44,7 @@ public class DiscordDND extends ListenerAdapter {
 
 	static private final String MY_ENTITY_ID = "698232700024127528";
 	static private final String MY_ENTITY_NAME = "Simply DND 5E";
-	static public final String PREFIX = "~";
+	static public final String PREFIX = "!";
 
 	private final Map<String,Character5e> characters = new HashMap<>();
 	static public ArrayList<DNDAction> actions = new ArrayList<>();
