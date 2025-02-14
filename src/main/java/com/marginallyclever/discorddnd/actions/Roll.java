@@ -16,11 +16,11 @@ public class Roll extends DNDAction {
 		ArrayList<String> list1 = new ArrayList<String>();
 	    Collections.addAll(list1, parts);
 	    list1.remove(0);
-	    String output = "";
-		for(int i=0;i<list1.size();++i) {
-			output += list1.get(i).trim();
-		}
-		return output;
+	    StringBuilder output = new StringBuilder();
+        for (String s : list1) {
+            output.append(s.trim());
+        }
+		return output.toString();
 	}
 	
 	@Override
@@ -28,7 +28,7 @@ public class Roll extends DNDAction {
 		String saneMessage = sanitizeMessage(event.message);
 		//System.out.println("roll="+saneMessage);
 
-		Pattern p = Pattern.compile("([\\+\\-]?\\d+)?(d[\\+\\-]?\\d+)(k[\\+\\-]?\\d+)?([\\+\\-]\\d+)?");
+		Pattern p = Pattern.compile("([\\+\\-]?\\d+)?(d[\\+\\-]?\\d+)?(k[\\+\\-]?\\d+)?([\\+\\-]\\d+)?");
 		Matcher m = p.matcher(saneMessage);
 		if(m.find()) {
 			//for(int i=0;i<m.groupCount()+1;++i) System.out.println(i+" > "+m.group(i));
@@ -41,7 +41,7 @@ public class Roll extends DNDAction {
 			if(m.group(1)!=null && !m.group(1).isEmpty()) numDice  = Integer.parseInt(m.group(1));
 			if(m.group(2)!=null && !m.group(2).isEmpty()) numSides = Integer.parseInt(m.group(2).substring(1));
 			if(m.group(3)!=null && !m.group(3).isEmpty()) numKeep  = Integer.parseInt(m.group(3).substring(1));
-			else numKeep=numDice;
+			else numKeep = numDice;
 			if(m.group(4)!=null && !m.group(4).isEmpty()) modifier = Integer.parseInt(m.group(4));
 
 			roll(event,numDice,numSides,numKeep,modifier);
@@ -55,7 +55,11 @@ public class Roll extends DNDAction {
 	}
 	
 	public String getHelp() {
-		return "roll [<a>]d<b>[k<c>][+/-<e>] - roll <a> (default 1) dice with <b> sides, keep <c> (default a), and add or subtract <e>.";
+		return "roll [<a>]d[<b>][k<c>][+/-<e>]\n"
+				+"\troll <a> dice (default 1)"
+				+"\twith <b> sides (default 20)"
+				+"\tkeep <c> (default all, negative for disadvantage)"
+				+"\tand add or subtract <e>.";
 	}
 
     private int [] rollDice(int numDice,int numSides) {
