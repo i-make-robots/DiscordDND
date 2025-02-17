@@ -5,9 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 import com.marginallyclever.discorddnd.actions.Add;
@@ -23,10 +21,13 @@ import com.marginallyclever.discorddnd.actions.SavingThrow;
 import com.marginallyclever.discorddnd.actions.Set;
 import com.marginallyclever.discorddnd.actions.Stats;
 import com.marginallyclever.discorddnd.actions.Subtract;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,19 +49,15 @@ public class DiscordDND extends ListenerAdapter {
 
 	private final Map<String,Character5e> characters = new HashMap<>();
 	static public ArrayList<DNDAction> actions = new ArrayList<>();
+
+	private final JDA jda;
+	private Guild guild;
+	private final List<String> voiceChannels = new ArrayList<>();
+	private AudioManager audioManager=null;
 	
     public static void main(String[] args) {
-        System.out.println("Hello World!");
-
-		String token = getTokenFromPreferencesOrQueryUser();
-		JDABuilder.createLight(token,
-						GatewayIntent.GUILD_MEMBERS,
-						GatewayIntent.GUILD_MESSAGES,
-						GatewayIntent.DIRECT_MESSAGES,
-						GatewayIntent.MESSAGE_CONTENT)
-				.addEventListeners(new DiscordDND())
-				.build();
-    }
+		new DiscordDND();
+	}
 
 	private static void forgetToken() {
 		Preferences preferences = Preferences.userNodeForPackage(DiscordDND.class);
@@ -84,6 +81,28 @@ public class DiscordDND extends ListenerAdapter {
 	}
 
 	public DiscordDND() {
+		super();
+		setupActions();
+		// start JDA
+		String token = getTokenFromPreferencesOrQueryUser();
+		jda = JDABuilder.createLight(token,
+						GatewayIntent.GUILD_MEMBERS,
+						GatewayIntent.GUILD_MESSAGES,
+						GatewayIntent.DIRECT_MESSAGES,
+						GatewayIntent.MESSAGE_CONTENT,
+						GatewayIntent.GUILD_VOICE_STATES)
+				.addEventListeners(this)
+				.build();
+
+		// wait for JDA to be ready
+		try {
+			jda.awaitReady();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    }
+
+	private void setupActions() {
 		actions.add(new Help());
 		actions.add(new Get());
 		actions.add(new Set());
@@ -98,8 +117,8 @@ public class DiscordDND extends ListenerAdapter {
 		actions.add(new SavingThrow());
 		actions.add(new Stats());
 	}
-    
-    private Character5e loadCharacter(String actorId, String characterName) {
+
+	private Character5e loadCharacter(String actorId, String characterName) {
 		// Is this actor loaded in memory?
 		if(characters.get(actorId)==null) {
 			// No.  Does it exist on disk?
@@ -204,5 +223,57 @@ public class DiscordDND extends ListenerAdapter {
 	private boolean iHaveSeenCharacterBefore(String characterName) {
 		File f = new File(characterNameToFileName(characterName));
 		return f.exists();
+	}
+
+	/**
+	 * Join the voice channel with the given name.
+	 * @param channelName the name of the voice channel to join.
+	 * @return true if the channel was found and joined, false otherwise.
+	 */
+	public boolean joinVoiceChannel(String channelName) {
+		if(guild==null) {
+			logger.error("Guild not set.");
+			return false;
+		}
+
+		var voiceChannel = guild.getVoiceChannelsByName(channelName, true).stream().findFirst();
+		if (voiceChannel.isEmpty()) {
+			logger.error("Voice channel not found: " + channelName);
+			return false;
+		}
+
+		var audioManager = guild.getAudioManager();
+
+		audioManager.openAudioConnection(voiceChannel.get());
+		logger.info("Joined voice channel: " + channelName);
+		return true;
+	}
+
+	public List<String> getGuilds() {
+		var guilds = new ArrayList<String>();
+		jda.getGuilds().forEach(guild -> guilds.add(guild.getName()));
+		return guilds;
+	}
+
+	public void setGuild(String item) {
+		guild = jda.getGuilds().stream().filter(g->g.getName().contentEquals(item)).findFirst().orElse(null);
+		if(guild==null) {
+			logger.error("Could not find guild: "+MY_ENTITY_NAME);
+			return;
+		}
+
+		voiceChannels.clear();
+		guild.getVoiceChannels().forEach(channel -> voiceChannels.add(channel.getName()));
+
+		// get the audio manager
+		audioManager = guild.getAudioManager();
+	}
+
+	public List<String> getVoiceChannels() {
+		return voiceChannels;
+	}
+
+	public AudioManager getAudioManager() {
+		return audioManager;
 	}
 }
