@@ -6,7 +6,7 @@
 
 	<groupId>com.marginallyclever</groupId>
 	<artifactId>discordDND</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
 
 	<name>DiscordDND</name>
@@ -14,6 +14,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<minimum.maven.version>3.8.1</minimum.maven.version>
+		<minimum.java.version>17</minimum.java.version>
+		<jogl.version>2.4.0-rc-20200307</jogl.version>
+		<maven-dependency-plugin.ignoreNonCompile>true</maven-dependency-plugin.ignoreNonCompile>
+		<maven.compiler.source>${minimum.java.version}</maven.compiler.source>
+		<maven.compiler.target>${minimum.java.version}</maven.compiler.target>
+		<maven.compiler.release>${minimum.java.version}</maven.compiler.release>
 	</properties>
 
 	<repositories>
@@ -29,7 +36,27 @@
 
 	<build>
 		<pluginManagement>
-		  <plugins>
+			<plugins>
+				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.3.0</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.1.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.3</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
 		    <plugin>
 		      <groupId>org.apache.maven.plugins</groupId>
 		      <artifactId>maven-surefire-plugin</artifactId>
@@ -44,8 +71,82 @@
 		            <target>15</target>
 		        </configuration>
 		    </plugin>
+
+			  <plugin>
+				  <artifactId>maven-assembly-plugin</artifactId>
+				  <configuration>
+					  <archive>
+						  <manifestEntries>
+							  <SplashScreen-Image>splash.png</SplashScreen-Image>
+						  </manifestEntries>
+						  <manifest>
+							  <mainClass>com.marginallyclever.discorddnd.DiscordDNDGUI</mainClass>
+							  <addClasspath>true</addClasspath>
+						  </manifest>
+					  </archive>
+					  <descriptors>
+						  <descriptor>${project.basedir}/src/main/assembly/application.xml</descriptor>
+					  </descriptors>
+				  </configuration>
+				  <executions>
+					  <execution>
+						  <id>make-assembly</id>
+						  <!-- this is used for inheritance merges -->
+						  <phase>package</phase>
+						  <!-- bind to the packaging phase -->
+						  <goals>
+							  <goal>single</goal>
+						  </goals>
+					  </execution>
+				  </executions>
+			  </plugin>
+
+			  <plugin>
+				  <artifactId>maven-jar-plugin</artifactId>
+				  <version>3.2.0</version>
+				  <configuration>
+					  <archive>
+						  <manifest>
+							  <mainClass>com.marginallyclever.discorddnd.DiscordDNDGUI</mainClass>
+							  <addClasspath>true</addClasspath>
+						  </manifest>
+					  </archive>
+				  </configuration>
+			  </plugin>
+
+			  <plugin>
+				  <artifactId>maven-resources-plugin</artifactId>
+				  <version>3.2.0</version>
+				  <executions>
+					  <execution>
+						  <id>copy-fat-jar</id>
+						  <phase>package</phase>
+						  <goals>
+							  <goal>copy-resources</goal>
+						  </goals>
+						  <configuration>
+							  <outputDirectory>${basedir}/target/package</outputDirectory>
+							  <resources>
+								  <resource>
+									  <directory>target</directory>
+									  <includes>
+										  <include>DiscordDND*-with-dependencies.jar</include>
+									  </includes>
+									  <filtering>false</filtering>
+								  </resource>
+							  </resources>
+						  </configuration>
+					  </execution>
+				  </executions>
+			  </plugin>
+
+			  <plugin>
+				  <artifactId>maven-dependency-plugin</artifactId>
+				  <configuration>
+					  <ignoreNonCompile>${maven-dependency-plugin.ignoreNonCompile}</ignoreNonCompile>
+				  </configuration>
+			  </plugin>
 		  </plugins>
-		</pluginManagement>
 	</build>
 	
 	<dependencies>
