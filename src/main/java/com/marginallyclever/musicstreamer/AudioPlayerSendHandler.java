@@ -1,4 +1,4 @@
-package com.marginallyclever.discorddnd;
+package com.marginallyclever.musicstreamer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;

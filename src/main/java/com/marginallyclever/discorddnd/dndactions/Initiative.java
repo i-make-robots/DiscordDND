@@ -1,12 +1,10 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 /**
@@ -14,7 +12,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
  * @author Dan Royer
  *
  */
-public class Initiative extends DNDAction {
+public class Initiative implements DNDAction {
 	ArrayList<String> names = new ArrayList<>();
 	
 	@Override

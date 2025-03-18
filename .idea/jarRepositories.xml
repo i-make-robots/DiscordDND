@@ -2,14 +2,39 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="lavalink" />
+      <option name="name" value="lavalink" />
+      <option name="url" value="https://maven.lavalink.dev/releases" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="https://repo.maven.apache.org/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="dv8tion" />
+      <option name="name" value="m2-dv8tion" />
+      <option name="url" value="https://m2.dv8tion.net/releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jitpack.io" />
+      <option name="name" value="jitpack.io" />
+      <option name="url" value="https://jitpack.io" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="jcenter" />
       <option name="name" value="jcenter-bintray" />
       <option name="url" value="https://jcenter.bintray.com" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="lavalink" />
+      <option name="name" value="lavalink" />
+      <option name="url" value="https://lavalink.dev" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jitpack" />
+      <option name="name" value="jitpack" />
+      <option name="url" value="https://jitpack.io" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
@@ -20,6 +45,21 @@
       <option name="id" value="jboss.community" />
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="lavalink snapshots" />
+      <option name="name" value="lavalink snapshots" />
+      <option name="url" value="https://maven.lavalink.dev/snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="lavalink" />
+      <option name="name" value="lavalink" />
+      <option name="url" value="https://lavalink.dev/releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="lavalink" />
+      <option name="name" value="lavalink" />
+      <option name="url" value="https://m2.dv8tion.net/releases" />
     </remote-repository>
   </component>
 </project>

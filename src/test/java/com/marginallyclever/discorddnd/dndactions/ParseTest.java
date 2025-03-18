@@ -1,4 +1,4 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import org.junit.Test;
 

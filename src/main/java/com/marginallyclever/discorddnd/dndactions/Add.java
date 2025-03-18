@@ -1,10 +1,10 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAbbreviationsList;
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Subtract extends DNDAction {
+public class Add implements DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
@@ -16,17 +16,17 @@ public class Subtract extends DNDAction {
 		Integer oldValue = event.actor.get(key);
 		if(oldValue==null) oldValue=0;
 		Integer value = Integer.parseInt(parts[2]);
-		Integer newValue = oldValue - value;
+		Integer newValue = oldValue + value;
 		event.actor.set(key, newValue);
 		event.reply(event.characterName +", your "+key+" is now "+newValue+".");
 	}
 
 	@Override
 	public String[] getNames() {
-		return new String[] { "subtract","sub" };
+		return new String[] { "add" };
 	}
 	
 	public String getHelp() {
-		return "sub [stat] [amount] - sub [amount] from [stat].";
+		return "add [stat] [amount] - add [amount] to [stat].";
 	}
 }

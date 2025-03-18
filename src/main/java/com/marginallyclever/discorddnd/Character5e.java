@@ -1,5 +1,6 @@
 package com.marginallyclever.discorddnd;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Character5e implements Serializable {
-	/**
-	 *
-	 */
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	protected Map<String,Integer> traits = new HashMap<>();

@@ -6,29 +6,24 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.*;
-import java.util.prefs.Preferences;
 
-import com.marginallyclever.discorddnd.actions.Add;
-import com.marginallyclever.discorddnd.actions.Get;
-import com.marginallyclever.discorddnd.actions.Help;
-import com.marginallyclever.discorddnd.actions.Image;
-import com.marginallyclever.discorddnd.actions.Initiative;
-import com.marginallyclever.discorddnd.actions.Insult;
-import com.marginallyclever.discorddnd.actions.Ping;
-import com.marginallyclever.discorddnd.actions.Roll;
-import com.marginallyclever.discorddnd.actions.Save;
-import com.marginallyclever.discorddnd.actions.SavingThrow;
-import com.marginallyclever.discorddnd.actions.Set;
-import com.marginallyclever.discorddnd.actions.Stats;
-import com.marginallyclever.discorddnd.actions.Subtract;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Guild;
+import com.marginallyclever.discordbot.DiscordBot;
+import com.marginallyclever.discorddnd.dndactions.Add;
+import com.marginallyclever.discorddnd.dndactions.Get;
+import com.marginallyclever.discorddnd.dndactions.Help;
+import com.marginallyclever.discorddnd.dndactions.Image;
+import com.marginallyclever.discorddnd.dndactions.Initiative;
+import com.marginallyclever.discorddnd.dndactions.Insult;
+import com.marginallyclever.discorddnd.dndactions.Ping;
+import com.marginallyclever.discorddnd.dndactions.Roll;
+import com.marginallyclever.discorddnd.dndactions.Save;
+import com.marginallyclever.discorddnd.dndactions.SavingThrow;
+import com.marginallyclever.discorddnd.dndactions.Set;
+import com.marginallyclever.discorddnd.dndactions.Stats;
+import com.marginallyclever.discorddnd.dndactions.Subtract;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.managers.AudioManager;
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,63 +38,20 @@ import org.slf4j.LoggerFactory;
 public class DiscordDND extends ListenerAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(DiscordDND.class);
 
-	static private final String MY_ENTITY_ID = "698232700024127528";
-	static private final String MY_ENTITY_NAME = "Simply DND 5E";
-	static public final String PREFIX = "!";
+	private final DiscordBot discordBot = new DiscordBot(DiscordDND.class);
 
+	public static final String PREFIX = "!";
 	private final Map<String,Character5e> characters = new HashMap<>();
-	static public ArrayList<DNDAction> actions = new ArrayList<>();
+	public static ArrayList<DNDAction> actions = new ArrayList<>();
 
-	private final JDA jda;
-	private Guild guild;
-	private final List<String> voiceChannels = new ArrayList<>();
-	private AudioManager audioManager=null;
-	
     public static void main(String[] args) {
 		new DiscordDND();
 	}
 
-	private static void forgetToken() {
-		Preferences preferences = Preferences.userNodeForPackage(DiscordDND.class);
-		preferences.remove("token");
-	}
-
-	/**
-	 * Get the bot token from Preferences.  if not available, ask the user and save it to preferences.
-	 * @return the token or "" if the user cancels.
-	 */
-	private static String getTokenFromPreferencesOrQueryUser() {
-		// read the token from preferences
-		Preferences preferences = Preferences.userNodeForPackage(DiscordDND.class);
-		String token = preferences.get("token", "");
-		if(token.isEmpty()) {
-			// prompt the user for the token
-			token = javax.swing.JOptionPane.showInputDialog("Please enter your Discord bot token.");
-			preferences.put("token", token);
-		}
-		return token;
-	}
-
 	public DiscordDND() {
 		super();
+		discordBot.addMessageListener(this::onMessageReceived);
 		setupActions();
-		// start JDA
-		String token = getTokenFromPreferencesOrQueryUser();
-		jda = JDABuilder.createLight(token,
-						GatewayIntent.GUILD_MEMBERS,
-						GatewayIntent.GUILD_MESSAGES,
-						GatewayIntent.DIRECT_MESSAGES,
-						GatewayIntent.MESSAGE_CONTENT,
-						GatewayIntent.GUILD_VOICE_STATES)
-				.addEventListeners(this)
-				.build();
-
-		// wait for JDA to be ready
-		try {
-			jda.awaitReady();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
     }
 
 	private void setupActions() {
@@ -190,10 +142,12 @@ public class DiscordDND extends ListenerAdapter {
     	super.onMessageReceived(event);
     }
 
+	// TODO move character stuff into class
 	static public String characterNameToFileName(String characterName) {
 		return characterName+".5e";
 	}
-    		
+
+	// TODO move character stuff into class
 	static public Character5e loadCharacter(String characterName) {
 		Character5e character = null;
         try {
@@ -203,11 +157,12 @@ public class DiscordDND extends ListenerAdapter {
             objectOut.close();
             System.out.println(characterName+" loaded.");
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Failed to load character "+characterName,ex);
         }
         return character;
 	}
-	
+
+	// TODO move character stuff into class
 	static public void saveCharacter(String characterName,Character5e character) {
         try {
             FileOutputStream fileOut = new FileOutputStream(characterNameToFileName(characterName));
@@ -216,64 +171,12 @@ public class DiscordDND extends ListenerAdapter {
             objectOut.close();
             System.out.println(characterName+" saved.");
         } catch (Exception ex) {
-            ex.printStackTrace();
+			logger.error("Failed to save character "+characterName,ex);
         }
 	}
 	
 	private boolean iHaveSeenCharacterBefore(String characterName) {
 		File f = new File(characterNameToFileName(characterName));
 		return f.exists();
-	}
-
-	/**
-	 * Join the voice channel with the given name.
-	 * @param channelName the name of the voice channel to join.
-	 * @return true if the channel was found and joined, false otherwise.
-	 */
-	public boolean joinVoiceChannel(String channelName) {
-		if(guild==null) {
-			logger.error("Guild not set.");
-			return false;
-		}
-
-		var voiceChannel = guild.getVoiceChannelsByName(channelName, true).stream().findFirst();
-		if (voiceChannel.isEmpty()) {
-			logger.error("Voice channel not found: " + channelName);
-			return false;
-		}
-
-		var audioManager = guild.getAudioManager();
-
-		audioManager.openAudioConnection(voiceChannel.get());
-		logger.info("Joined voice channel: " + channelName);
-		return true;
-	}
-
-	public List<String> getGuilds() {
-		var guilds = new ArrayList<String>();
-		jda.getGuilds().forEach(guild -> guilds.add(guild.getName()));
-		return guilds;
-	}
-
-	public void setGuild(String item) {
-		guild = jda.getGuilds().stream().filter(g->g.getName().contentEquals(item)).findFirst().orElse(null);
-		if(guild==null) {
-			logger.error("Could not find guild: "+MY_ENTITY_NAME);
-			return;
-		}
-
-		voiceChannels.clear();
-		guild.getVoiceChannels().forEach(channel -> voiceChannels.add(channel.getName()));
-
-		// get the audio manager
-		audioManager = guild.getAudioManager();
-	}
-
-	public List<String> getVoiceChannels() {
-		return voiceChannels;
-	}
-
-	public AudioManager getAudioManager() {
-		return audioManager;
 	}
 }

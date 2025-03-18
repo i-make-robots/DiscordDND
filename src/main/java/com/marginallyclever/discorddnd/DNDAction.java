@@ -1,9 +1,18 @@
 package com.marginallyclever.discorddnd;
 
-public abstract class DNDAction {
-	abstract public String [] getNames();
+public interface DNDAction {
+	/**
+	 * @return a list of names that can be used to call this action.
+	 */
+	String [] getNames();
 
-	abstract public String getHelp();
-	
-	abstract public void execute(DNDEvent event);
+	/**
+	 * @return a description of what this action does and how to use it.
+	 */
+	String getHelp();
+
+	/**
+	 * Execute the action and report results to the {@link DNDEvent}.
+	 */
+	void execute(DNDEvent event);
 }

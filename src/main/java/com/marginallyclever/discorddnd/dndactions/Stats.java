@@ -1,9 +1,9 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Stats extends DNDAction {
+public class Stats implements DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {

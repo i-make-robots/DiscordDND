@@ -1,6 +1,7 @@
-package com.marginallyclever.discorddnd;
+package com.marginallyclever.musicstreamer;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.marginallyclever.discordbot.DiscordBot;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -11,6 +12,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,34 +28,42 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-public class DiscordDNDGUI extends JPanel {
-    private final DiscordDND discordDND = new DiscordDND();
+/**
+ * Please note that if you stream copyrighted music you are liable for any legal consequences.
+ * This code is provided as an example of how to use the Discord API and Lavaplayer.
+ */
+public class DiscordMusicStreamer extends JPanel {
+    private static final Logger logger = LoggerFactory.getLogger(DiscordMusicStreamer.class);
+
+    private final DiscordBot discordBot = new DiscordBot(DiscordMusicStreamer.class);
+
     private final DefaultListModel<String> queueModel = new DefaultListModel<>();
     private final JList<String> trackList = new JList<>(queueModel);
     private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
-    private final ImageIcon playIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever.discordnd/icons8-play-16.png")));
-    private final ImageIcon pauseIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever.discordnd/icons8-pause-16.png")));
-    private final ImageIcon loopIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever.discordnd/icons8-loop-16.png")));
+    private GuildMusicManager musicManager;
+
+    private final ImageIcon playIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever/musicstreamer/icons8-play-16.png")));
+    private final ImageIcon pauseIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever/musicstreamer/icons8-pause-16.png")));
+    private final ImageIcon loopIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/com/marginallyclever/musicstreamer/icons8-loop-16.png")));
     private final JButton playButton = new JButton(playIcon);
     private final JProgressBar trackProgressBar = new JProgressBar();
     private final JSlider volumeSlider = new JSlider();
     private final JToggleButton loopAtEndButton = new JToggleButton(loopIcon);
     private int currentlyPlayingIndex = -1;
-    GuildMusicManager musicManager;
 
     public static void main(String[] args) {
         FlatLightLaf.setup();
 
-        JFrame frame = new JFrame("Discord DND");
+        JFrame frame = new JFrame("Music Streamer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
-        frame.add(new DiscordDNDGUI());
+        frame.add(new DiscordMusicStreamer());
 
         javax.swing.SwingUtilities.invokeLater(()->frame.setVisible(true));
     }
 
-    public DiscordDNDGUI() {
+    public DiscordMusicStreamer() {
         super(new BorderLayout());
         setupMusicManager();
 
@@ -213,7 +224,7 @@ public class DiscordDNDGUI extends JPanel {
             public void playlistLoaded(AudioPlaylist playlist) {
                 AudioTrack firstTrack = playlist.getSelectedTrack();
                 if (firstTrack == null) {
-                    firstTrack = playlist.getTracks().get(0);
+                    firstTrack = playlist.getTracks().getFirst();
                 }
                 musicManager.player.playTrack(firstTrack);
             }
@@ -256,7 +267,7 @@ public class DiscordDNDGUI extends JPanel {
             public boolean canImport(TransferSupport support) {
                 boolean canImport = support.isDrop() &&
                         (support.isDataFlavorSupported(DataFlavor.stringFlavor) ||
-                         support.isDataFlavorSupported(DataFlavor.javaFileListFlavor));
+                                support.isDataFlavorSupported(DataFlavor.javaFileListFlavor));
                 System.out.println("canImport: " + canImport);
                 return canImport;
             }
@@ -294,7 +305,7 @@ public class DiscordDNDGUI extends JPanel {
                     }
                     return true;
                 } catch (UnsupportedFlavorException | IOException ex) {
-                    ex.printStackTrace();
+                    logger.error("Failed to import data", ex);
                 }
                 return false;
             }
@@ -365,19 +376,19 @@ public class DiscordDNDGUI extends JPanel {
     private void setupGuildSelection(JPanel guildSelectionContainer,JPanel voiceChannelsContainer) {
         guildSelectionContainer.add(new JLabel("Guild"), BorderLayout.WEST);
 
-        var list = discordDND.getGuilds();
-        list.add(0,"None");
+        var list = discordBot.getGuilds();
+        list.addFirst("None");
         var guilds = new JComboBox<>(list.toArray(new String[0]));
         guildSelectionContainer.add(guilds, BorderLayout.CENTER);
         guilds.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 // is e is the first item by index?
                 if(guilds.getSelectedIndex()==0) {
-                    discordDND.setGuild(null);
+                    discordBot.setGuild(null);
                     return;
                 }
                 System.out.println("Selected " + e.getItem());
-                discordDND.setGuild((String) e.getItem());
+                discordBot.setGuild((String) e.getItem());
                 updateVoiceChannels(voiceChannelsContainer);
             }
         });
@@ -386,8 +397,8 @@ public class DiscordDNDGUI extends JPanel {
     private void updateVoiceChannels(JPanel voiceChannelsContainer) {
         voiceChannelsContainer.removeAll();
 
-        var list = discordDND.getVoiceChannels();
-        list.add(0,"None");
+        var list = discordBot.getVoiceChannels();
+        list.addFirst("None");
         var voiceChannels = new JComboBox<>(list.toArray(new String[0]));
         voiceChannelsContainer.add(new JLabel("Voice Channel"),BorderLayout.WEST);
         voiceChannelsContainer.add(voiceChannels,BorderLayout.CENTER);
@@ -395,9 +406,9 @@ public class DiscordDNDGUI extends JPanel {
         voiceChannels.addItemListener(e->{
             if(e.getStateChange() == ItemEvent.SELECTED) {
                 System.out.println("Selected "+e.getItem());
-                if(discordDND.joinVoiceChannel((String)e.getItem())) {
+                if(discordBot.joinVoiceChannel((String)e.getItem())) {
                     // success
-                    discordDND.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+                    discordBot.getAudioManager().setSendingHandler(musicManager.getSendHandler());
                 };
             }
         });
@@ -406,3 +417,4 @@ public class DiscordDNDGUI extends JPanel {
         repaint();
     }
 }
+

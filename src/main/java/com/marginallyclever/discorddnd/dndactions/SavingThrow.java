@@ -1,10 +1,10 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAbbreviationsList;
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Get extends DNDAction {
+public class SavingThrow implements DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
@@ -13,19 +13,20 @@ public class Get extends DNDAction {
 		String [] parts = event.message.split("\\s");
 		if(parts.length!=2) return;
 		String key = DNDAbbreviationsList.get(parts[1]);
-		Integer value = event.actor.get(key);
-		if(value==null) {
-			event.reply(event.characterName +", I don't know what '"+key+"' means...yet.");
+		Integer ability = event.actor.get(key);
+		if(ability == null) {
+			event.reply(event.characterName +", what's '"+key+"'?");
 		} else {
-			event.reply(event.characterName +", your "+key+" is "+value+".");
+			(new Roll()).roll(event,1,20,1,ability);
 		}
 	}
 
 	@Override
 	public String[] getNames() {
-		return new String[] { "get" };
+		return new String[] { "savingThrow","st" };
 	}
+	
 	public String getHelp() {
-		return "get [stat] - get the value of [stat].";
+		return "savingthrow [stat] - roll a saving throw for [stat].";
 	}
 }

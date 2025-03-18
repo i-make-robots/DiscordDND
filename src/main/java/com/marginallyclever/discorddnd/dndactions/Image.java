@@ -1,21 +1,21 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Ping extends DNDAction {
+public class Image implements DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {
-		event.reply("pong");
+		
 	}
 
 	@Override
 	public String[] getNames() {
-		return new String[] { "ping" };
+		return new String[] { "image" };
 	}
 	
 	public String getHelp() {
-		return "ping - get back a pong, prove the bot is alive.";
+		return "image - show a helpful guide to DND.";
 	}
 }

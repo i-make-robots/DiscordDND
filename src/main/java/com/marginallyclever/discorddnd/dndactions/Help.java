@@ -1,22 +1,26 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 import com.marginallyclever.discorddnd.DiscordDND;
 
-public class Help extends DNDAction {
+/**
+ * List of all help actions.
+ */
+public class Help implements DNDAction {
 	@Override
 	public void execute(DNDEvent event) {
-		String text="";
+		StringBuilder text = new StringBuilder();
 		
 		for(DNDAction act : DiscordDND.actions) {
-			text += DiscordDND.PREFIX+act.getHelp()+"\n";
+			text.append(DiscordDND.PREFIX)
+					.append(act.getHelp())
+					.append("\n");
 		}
 		
 		event.reply(
 			"```css\n"+text+"\n"
-			+"S is a string (text), W is a whole number. Stuff [in brackets] is optional.\n"
-			+"Many attributes have abbreviations - for example, i or int will both equal intelligence.```");
+			+"S is text, W is a whole number. Stuff [in brackets] is optional.\n```");
 	}
 
 	@Override

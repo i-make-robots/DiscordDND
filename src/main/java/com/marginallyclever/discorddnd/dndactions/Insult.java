@@ -1,4 +1,4 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -8,7 +8,7 @@ import java.net.URLConnection;
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Insult extends DNDAction {
+public class Insult implements DNDAction {
 	@Override
 	public void execute(DNDEvent event) {
 		String message=getURLContents("https://evilinsult.com/generate_insult.php");

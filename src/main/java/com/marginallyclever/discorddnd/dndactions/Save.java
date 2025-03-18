@@ -1,10 +1,10 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 import com.marginallyclever.discorddnd.DiscordDND;
 
-public class Save extends DNDAction {
+public class Save implements DNDAction {
 
 	@Override
 	public void execute(DNDEvent event) {

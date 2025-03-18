@@ -1,4 +1,4 @@
-package com.marginallyclever.discorddnd.actions;
+package com.marginallyclever.discorddnd.dndactions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
-public class Roll extends DNDAction {
+public class Roll implements DNDAction {
 	private final Pattern pattern = Pattern.compile("\\(([^\\)]+)\\)|^[^\\(\\)]+$");
 	private final Pattern subpattern = Pattern.compile("([\\+\\-]?\\d+)?(d[\\+\\-]?\\d+)?(k[\\+\\-]?\\d+)?([\\+\\-]\\d+)?");
 
