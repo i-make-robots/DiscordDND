@@ -32,10 +32,10 @@ import java.util.Objects;
  * Please note that if you stream copyrighted music you are liable for any legal consequences.
  * This code is provided as an example of how to use the Discord API and Lavaplayer.
  */
-public class DiscordMusicStreamer extends JPanel {
-    private static final Logger logger = LoggerFactory.getLogger(DiscordMusicStreamer.class);
+public class MusicStreamer extends JPanel {
+    private static final Logger logger = LoggerFactory.getLogger(MusicStreamer.class);
 
-    private final DiscordBot discordBot = new DiscordBot(DiscordMusicStreamer.class);
+    private final DiscordBot discordBot = new DiscordBot(MusicStreamer.class);
 
     private final DefaultListModel<String> queueModel = new DefaultListModel<>();
     private final JList<String> trackList = new JList<>(queueModel);
@@ -58,12 +58,12 @@ public class DiscordMusicStreamer extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
-        frame.add(new DiscordMusicStreamer());
+        frame.add(new MusicStreamer());
 
         javax.swing.SwingUtilities.invokeLater(()->frame.setVisible(true));
     }
 
-    public DiscordMusicStreamer() {
+    public MusicStreamer() {
         super(new BorderLayout());
         setupMusicManager();
 
