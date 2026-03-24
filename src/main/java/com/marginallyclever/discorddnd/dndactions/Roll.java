@@ -10,16 +10,26 @@ import java.util.regex.Pattern;
 import com.marginallyclever.discorddnd.DNDAction;
 import com.marginallyclever.discorddnd.DNDEvent;
 
+/**
+ * <p>Rolls dice and prints results.  Supports multiple rolls in one command, with modifiers and keep/drop rules.</p>
+ */
 public class Roll implements DNDAction {
+	/**
+	 * A precompiled regular expression pattern used for matching strings in two formats:
+	 * 1. Strings enclosed in parentheses, capturing the content inside the parentheses.
+	 * 2. Strings containing no parentheses at all.
+	 *
+	 * The first capturing group will contain the content inside the parentheses, if applicable.
+	 */
 	private final Pattern pattern = Pattern.compile("\\(([^\\)]+)\\)|^[^\\(\\)]+$");
 	private final Pattern subpattern = Pattern.compile("([\\+\\-]?\\d+)?(d[\\+\\-]?\\d+)?(k[\\+\\-]?\\d+)?([\\+\\-]\\d+)?");
 
     // remove all whitespace and the roll command from the start
 	private String sanitizeMessage(String input) {
-		String [] parts = input.split("\\s");
+		String [] parts = input.toLowerCase().split("\\s");
 		List<String> list1 = new ArrayList<>();
 	    Collections.addAll(list1, parts);
-	    list1.remove(0);
+	    list1.removeFirst();
 	    StringBuilder output = new StringBuilder();
         for (String s : list1) {
             output.append(s.trim());
@@ -92,8 +102,8 @@ public class Roll implements DNDAction {
 	/**
 	 * keep some dice.  Keep it organic looking by not sorting the list.
 	 * mark the rejects by making them negative amounts.
-	 * @param rolls
-	 * @param numKeep
+	 * @param rolls the dice rolls
+	 * @param numKeep how many of the rolls to keep?  Must be greater than 0 and less than or equal to numDice
 	 */
     private void keepSomeHighRolls(int [] rolls,int numKeep) {
     	for(int k = numKeep;k<rolls.length;++k) {
@@ -108,8 +118,8 @@ public class Roll implements DNDAction {
 	/**
 	 * keep some dice.  Keep it organic looking by not sorting the list.
 	 * mark the rejects by making them negative amounts.
-	 * @param rolls
-	 * @param numKeep
+	 * @param rolls the dice rolls
+	 * @param numKeep how many of the rolls to keep?  Must be greater than 0 and less than or equal to numDice
 	 */
     private void keepSomeLowRolls(int [] rolls,int numKeep) {
     	for(int k = numKeep;k<rolls.length;++k) {
@@ -123,7 +133,7 @@ public class Roll implements DNDAction {
     
     /**
      * Roll dice and print result.  
-     * @param event
+     * @param event the event that triggered this action
      * @param numDice quantity of dice to roll
      * @param numSides how many sides on the dice being rolled
      * @param numKeep how many of the rolls to keep?  Must be greater than 0 and less than or equal to numDice
